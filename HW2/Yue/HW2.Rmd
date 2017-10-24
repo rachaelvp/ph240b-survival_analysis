@@ -1,0 +1,176 @@
+---
+title: 'PH C240B: Assignment 2'
+author: "Rachael Phillips"
+date: "10/20/2017"
+output: 
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(survival)
+library(dplyr)
+library(doParallel)
+library(mvtnorm)
+```
+
+## Problem 1
+
+Consider the following data generating system for $(T,C)$, a random person’s survival time and censoring time in days. $T$ follows an exponential distribution with $\lambda = 0.01$ and $C$ follows a weibull distribution with shape and scale parameters, 4 and 100. Simulate 1000 random draws of $n = 1000$ from this distribution and for each draw compute the Kaplan-Meier estimator for survival curve at times 50, 60 and 70, where we consider the study ending at time 100. Form 95\% simultaneous confidence bands from each draw and check simultaneous coverage of the true survival. Use the influence curve for the KM estimator to obtain the CI’s for each draw. Report the coverage percentage. Note, use foreach for this as shown in lab3sol.Rnw on bcourses to save some time.
+
+\vspace{.1in}
+
+```{r, cache=TRUE}
+
+S0 = function(t) 1-pexp(t,.01)
+
+sim.cov = function(n) {
+  T = rexp(n, .01)
+  C = rweibull(n, 4, scale = 100)
+  
+  # record the observed right censored data
+  Ttilde = pmin(T,C)
+  Delta = T <= C & T < 100
+  
+  # do a KM fit
+  km = survfit(Surv(Ttilde, Delta, type = "right") ~ 1, type = "kaplan-meier", 
+               conf.int = .95)
+  
+  # make step functions
+  km_step <- stepfun(km$time, c(1, km$surv))
+  km_lower <- stepfun(km$time, c(1, km$lower))
+  km_upper <- stepfun(km$time, c(1, km$upper))
+  
+  # order the times and corresponding deltas
+  T_ord = Ttilde[order(Ttilde)]
+  D_ord = Delta[order(Ttilde)]
+  
+  
+  ##### CHANGES MADE ######
+  # Get all known death times in order and compute the hazard at such times
+  # lambda = km$n.event[D_ord]/km$n.risk[D_ord]
+  T_death = T_ord[D_ord]
+  nrisk = vapply(T_death, FUN = function(x) sum(Ttilde >= x), FUN.VALUE = 1)
+  lambda = 1/nrisk
+  #########################
+  
+  # compute the prob of surviving up to or past each death time
+  Pbar = vapply(T_death, FUN = function(time) mean(Ttilde >= time), FUN.VALUE = 1)
+  
+  IC_time = function(Ttilde, Delta, time, n) {
+    sum((-(T_death <= time)*km_step(time)/(1 - lambda))*
+          lambda^2*(1 - lambda)^2/((1 - lambda)^2/n + lambda^2*Pbar)*
+          ((Ttilde == T_death & Delta == 1)/lambda - (Ttilde > T_death)/(1 - lambda)))
+  }
+  
+  # compute the IC matrix with each col an IC        
+  IC = vapply(c(50,60,70),FUN = function(t) {
+    unlist(lapply(1:n, FUN = function(i) {
+      IC_time(Ttilde[i], Delta[i], t, n)
+    }))
+  }, FUN.VALUE = rep(1,n))
+  
+  
+  # COMPUTE THE CORRELATION and draw the random three-d normals
+  Sigma = cor(IC)
+  z = rmvnorm(1e6, c(0,0,0), Sigma)
+  
+  # compute the max abs val of each of the 3-d normals then choose the 
+  # 95th quantile of that vector, which is the simultaneous number of SE's
+  z_abs = apply(z, 1, FUN = function(row) max(abs(row)))
+  SE_num = quantile(z_abs, .95)
+  
+  # Note how the CI is wider when demanding simultaneous coverage
+  Cov50 = km_lower(50) <= S0(50) & km_upper(50) >= S0(50)
+  Cov60 = km_lower(60) <= S0(60) & km_upper(60) >= S0(60)
+  Cov70 = km_lower(70) <= S0(70) & km_upper(70) >= S0(70)
+  
+  indy_cov = all(Cov50, Cov60, Cov70)
+  
+  # simultaneous for 40, 50, 60
+  Sim50 = km_step(50) - SE_num*sd(IC[,1])*sqrt(n-1)/n <= S0(50) & 
+    S0(50) <= km_step(50) + SE_num*sd(IC[,1])*sqrt(n-1)/n
+  Sim60 = km_step(60) - SE_num*sd(IC[,2])*sqrt(n-1)/n <= S0(60) & 
+    S0(60) <= km_step(60) + SE_num*sd(IC[,2])*sqrt(n-1)/n
+  Sim70 = km_step(70) - SE_num*sd(IC[,3])*sqrt(n-1)/n <= S0(70) & 
+    S0(70) <= km_step(70) + SE_num*sd(IC[,3])*sqrt(n-1)/n
+  
+  sim_cov = all(Sim50, Sim60, Sim70)
+  
+  return(c(indy_cov = indy_cov, sim_cov = sim_cov))
+}
+
+sim.cov(1000)
+
+registerDoParallel(cores = detectCores())
+getDoParWorkers()
+
+B = 1000
+n = 1000
+ALL = foreach(i=1:B,.packages=c("mvtnorm"), .errorhandling = "remove") %dopar% {sim.cov(n)}
+res = do.call(rbind, ALL)
+colMeans(res)
+```
+
+We calculated 'indy_cov' based on the combination of individually based confidence intervals (i.e. a confidence for \textit{one} time point) and we see that, even though each confidence interval probably covers it's correspond truth 95\% of the time, these individual confidence intervals only cover the truth simultaneously (i.e. across our set of time points) roughly 91\% of the time. Alternatively, we calculated 'sim_cov' based on a 95\% simultaneous confidence interval. A simultaneous confidence interval is constructed according to a \textit{set} of points and simultaneous confidence intervals stem from a multivariate normal distribution with mean equal to 0 and variance equal to the correlation matrix of the covariance matrix for the set. They are also wider than individually based confidence intervals because they need to cover a set of points opposed to a singular point. For a simutaneous confidence interval, we expect all intervals to contain their corresponding truth with 95\% confidence and, indeed, we see that this is the case as the 'sim_cov' is exactly 95\%!
+
+## Problem 2
+
+Let $(W,A,Y)$ be the observed data with distribution, $P_0 \in M$ nonparametric. Define the following parameter mapping for $P\in M: \Psi(P) = E_P[(1,1,W)\beta]$ where $\beta=\Psi^1(P)=\text{argmin}_{\gamma}E_P(Y - (1,A,W)\gamma)^2$.
+
+(a) The empirical distribution, $\textbf{P}_n$, is the NPMLE for the true distribution. We use $\textbf{P}_n$ as a plug-in estimator, $\Psi(\textbf{P}_n)$, for the true parameter, $\Psi(P_0)$. This is called the NPMLE for $\Psi(P_0)$. Derive this estimator’s influence curve. You may derive the efficient influence curve, $D^*_{\Psi}(P)$ first and then your answer is $D^*_{\Psi}(\textbf{P}_n)$  This is a valid approach but not the only approach.
+
+Because $\Psi(P)$ is a function of $\Psi^1(P)$ we first derive the efficient influence curve for $\Psi^1(P)=\beta=\text{argmin}_{\gamma}E_P(Y - (1,A,W)\gamma)^2$. First we need to compute the pathwise derivative (also let's assume that W is $d$-dimensional:
+
+We can use the delta method to derive the efficient influence curve for this parameter mapping:
+
+$$ D^*_{\Psi}(P) = \frac{d\Psi}{d \beta}D^*_\beta (P)(O)\\
+= E_P(1,1,W)D^*_\beta (P)(O)
+$$
+Next we compute $D^*_\beta (P)(O)$:
+$$\because \Psi^{'}(P) = \beta = \text{argmin}_{\gamma}E_P(Y - (1,A,W)\gamma)^2\\
+\therefore \beta\ satisfies\ \frac{d}{d\beta}\text{argmin}_{\gamma}E_{P}(Y - (1,A,W)\beta)^2 = 0_{d\times 1}\\
+\Rightarrow 2[E_{P}(Y - (1,A,W)\beta)(1, A, W)^T] = 0_{d\times 1}\\
+\Rightarrow E_{P}(Y - (1,A,W)\beta)(1, A, W)^T = 0_{d\times 1}...................(1)\\
+
+And \because \Psi^{'}(P_\epsilon) = \beta = \text{argmin}_{\gamma}E_{P_\epsilon}(Y - (1,A,W)\gamma)^2\\
+\therefore \beta_\epsilon\ satisfies\ \frac{d}{d\beta_\epsilon}\text{argmin}_{\gamma}E_{P_\epsilon}(Y - (1,A,W)\beta_\epsilon)^2 = 0_{d\times 1}\\
+\Rightarrow 2[E_{P_\epsilon}(Y - (1,A,W)\beta_\epsilon)(1, A, W)^T] = 0_{d\times 1}\\
+\Rightarrow E_{P_\epsilon}(Y - (1,A,W)\beta_\epsilon)(1, A, W)^T = 0_{d\times 1}....................(2)\\
+from (1)(2)\therefore E_{P}(Y - (1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}(Y - (1,A,W)\beta_\epsilon)(1, A, W)^T = 0_{d\times 1}\\
+\Rightarrow E_{P}(Y - (1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}(Y - (1,A,W)\beta)(1, A, W)^T \\+  E_{P_\epsilon}(Y - (1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}(Y - (1,A,W)\beta_\epsilon)(1, A, W)^T = 0_{d\times 1}\\
+\therefore E_{P_\epsilon}(Y - (1,A,W)\beta_\epsilon)(1, A, W)^T - E_{P_\epsilon}(Y - (1,A,W)\beta)(1, A, W)^T.......(3)\\
+= E_{P}(Y - (1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}(Y - (1,A,W)\beta)(1, A, W)^T..........(4)\\
+\because lim_{\epsilon \rightarrow 0}\frac{(3)}{\epsilon}\\
+= E_{P_\epsilon}(Y - (1,A,W)\frac{\beta_\epsilon-\beta}{\epsilon})(1, A, W)^T\\
+= lim_{\epsilon \rightarrow 0} \int (Y - (1,A,W))\beta(1,A,W)^T\frac{P_\epsilon(O)-P(O)}{\epsilon}dv(O)(\because P_\epsilon(O) = (1+\epsilon h)P(O))\\
+= \int (Y - (1,A,W))\beta(1,A,W)^TS(O)P(O)dv(O)\\
+= E_p[(Y-(1,A,W))\beta(1,A,W)^TS(O)].........(5)\\
+On\ the\ other\ hand, (4) = E_{P}((1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}((1,A,W)\beta)(1, A, W)^T\\
+\\\ lim_{\epsilon \rightarrow 0}\frac{(4)}{\epsilon}\\
+=
+$$
+
+(b) Consider the following data generating process: $W_1, W_2$ are standard normals, $Pr(A = 1) = expit(1 + 0.4W_1 - 0.4W_2W_1)$, $Y = (W_1 + W_2)^2 + \epsilon$, $\epsilon \sim N[0,1]$. What is the true parameter value, $\Psi(P_0)$, for this data generating process?
+
+(c) Now consider the parameter, $\Psi^2(P) = E_P E_P [Y | A = 1, W ]$ or the true treatment specific mean for our non-parametric model. What is the true parameter value for the data generating process in part (b)?
+
+(d) Run a simulation where you take 1000 draws of $n = 1000$ from the data generating process in part (b). Using your NPMLE from part (a) and its influence curve to form 95\% Wald confidence intervals, check coverage of the true $\Psi$ and $\Psi^2$ for each draw. Report the coverage percentage for each parameter. Considering that estimating $\Psi$ is often used to estimate $\Psi^2$, comment on your results.
+
+```{r}
+
+
+```
+
+## Problem 3
+
+Bonus question: What is the remainder term for your estimator in part (a)? What remainder term conditions need to be satisfied for the estimator to be asymptotically linear?
+
+We assume the NPMLE is well-behaved in the sense that it estimates the parameters in the second-order remainder at a rate faster than $n^{-1/4}$ (i.e. consistent at rate < $n^{-1/4}$). Then, $R_2(\textbf{P}_n,P_0)=o_P(n^{-1/2})$ and $\Psi(\textbf{P}_n)-\Psi(P_0) = (P_n-P_0)D^*(\textbf{P}_n) + o_P(n^{-1/2})$. We had to make this assumption to derive the efficient influece curve for the NPMLE and the remainder term in part (a) is 
+
+### Collaborators & Resources
+
+Tommy Carpenito, Yue You
+
+Jonathan's lab3sol
