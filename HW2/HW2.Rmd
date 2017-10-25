@@ -251,24 +251,31 @@ mean(df$Y)
 
 (d) Run a simulation where you take 1000 draws of $n = 1000$ from the data generating process in part (b). Using your NPMLE from part (a) and its influence curve to form 95\% Wald confidence intervals, check coverage of the true $\Psi$ and $\Psi^2$ for each draw. Report the coverage percentage for each parameter. Considering that estimating $\Psi$ is often used to estimate $\Psi^2$, comment on your results.
 
-```{r}
+```{r, cache=TRUE}
 sim <- function(n) {
-W1 <- rnorm(n, 0, 1)
-W2 <- rnorm(n, 0, 1)
-A <- rbinom(n, 1, expit(1 + .4 * W1 - .4 * W2 * W1))
-epsilon <- rnorm(n, 0 ,1)
-Y <- (W1 + W2)^2 + epsilon
-df <- data.frame(W1, W2, A, Y)
-cf_df <- df  
-cf_df$A <- 1
-pred <- predict(beta_hat, cf_df)
+ W1 <- rnorm(n, 0, 1)
+ W2 <- rnorm(n, 0, 1)
+ A <- rbinom(n, 1, expit(1 + .4 * W1 - .4 * W2 * W1))
+ epsilon <- rnorm(n, 0 ,1)
+ Y <- (W1 + W2)^2 + epsilon
+ df <- data.frame(W1, W2, A, Y)
+ beta_hat <- lm(Y ~ ., data = df)
+ IC <- mean(beta_hat$fitted.values)*(Y-beta_hat$fitted.values)
+ sigma <- sqrt(var(IC)/(n))
+ Psi.n <- mean(beta_hat$fitted.values)
+ upperbound <- Psi.n + 1.96*sigma
+ lowerbound <- Psi.n - 1.96*sigma
+ 
+ # true Psi_1 from part (b)
+ Psi_1 <- 1.75
+ # true Psi_2 from part (c)
+ Psi_2 <- 2
 
-mean(pred)
-# true Psi_1 from part (b)
-Psi_1 <- 1.75
-# true Psi_2 from part (c)
-Psi_2 <- 2
-
+ indicator_Psi1 <- as.numeric(upperbound > Psi_1 && lowerbound < Psi_1)
+ 
+ indicator_Psi2 <- as.numeric(upperbound > Psi_2 && lowerbound < Psi_2)
+ 
+ return(c(indicator_Psi1, indicator_Psi2))
 }
 sim(1000)
 
@@ -295,6 +302,6 @@ where $\Psi(\textbf{P}_n)=\frac{1}{n}\sum_{i=1}^n(1,1,W_i)\hat{\beta}$, $\Psi(P_
 
 ### Collaborators & Resources
 
-Tommy Carpenito, Yue You
+Tommy Carpenito, Yue You, Kevin Benac
 
 Jonathan's lab3sol & OH
