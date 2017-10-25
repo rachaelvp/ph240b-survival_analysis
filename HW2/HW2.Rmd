@@ -235,6 +235,12 @@ $$E_{U,X}[Y(A=1)]=EE[Y|A=1,W]$$
 
 When we condition on both $A$ and $W$, we are making the assumption that $Y \bot A|W$.
 
+Unfortunately, these results do not indicate a unique value for the influence curve for each individual observation. Based on page 537 of the Targeted Learning book, we would expect the following IC:
+
+$$D^*_{\Psi}(\textbf{P}n) = E_P(1,1,W)[E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}[(Y-(1,A,W))\beta(1,A,W)^{\top}]-\Psi(P_n)$$
+
+which is almost the same as our result. 
+
 ```{r, cache=TRUE}
 
 n <- 10000
@@ -290,6 +296,8 @@ res <- do.call(rbind, ALL)
 colMeans(res)
 
 ```
+
+Considering that estimating $\Psi$ is often used to estimate $\Psi^2$, we do expect these coverages to be similar. 
 
 ## Problem 3
 
