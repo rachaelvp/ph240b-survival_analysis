@@ -117,24 +117,65 @@ We calculated 'indy_cov' based on the combination of individually based confiden
 
 ## Problem 2
 
-Let $(W,A,Y)$ be the observed data with distribution, $P_0 \in M$ nonparametric. Define the following parameter mapping for $P\in M: \Psi(P) = E_P[(1,1,W)\beta]$ where $\beta=\Psi^1(P)=\text{argmin}_{\gamma}E_P(Y - (1,A,W)\gamma)^2$.
+Let $(W,A,Y)$ be the observed data with distribution, $P_0 \in M$ nonparametric. Define the following parameter mapping for $P\in M: \Psi(P) = E_P\big[(1,1,W)\beta\big]$ where $\beta=\Psi^1(P)=\text{argmin}{\gamma}E_P\big[(Y - (1,A,W)\gamma)^2\big]$.
 
 (a) The empirical distribution, $\textbf{P}_n$, is the NPMLE for the true distribution. We use $\textbf{P}_n$ as a plug-in estimator, $\Psi(\textbf{P}_n)$, for the true parameter, $\Psi(P_0)$. This is called the NPMLE for $\Psi(P_0)$. Derive this estimator’s influence curve. You may derive the efficient influence curve, $D^*_{\Psi}(P)$ first and then your answer is $D^*_{\Psi}(\textbf{P}_n)$  This is a valid approach but not the only approach.
 
-Because $\Psi(P)$ is a function of $\Psi^1(P)$ we first derive the efficient influence curve for $\Psi^1(P)=\beta=\text{argmin}_{\gamma}E_P(Y - (1,A,W)\gamma)^2$. First we need to compute the pathwise derivative (also let's assume that W is $d$-dimensional:
+Because $\Psi(P)$ is a function of $\Psi^1(P)$ we first derive the efficient influence curve for $\Psi^1(P)=\beta=\text{argmin}{\gamma}E_P\big[(Y - (1,A,W)\gamma)^2\big]$. First we need to compute the pathwise derivative (also let's assume that W is $d$-dimensional):
 
-We can use the delta method to derive the efficient influence curve for this parameter mapping:
+$$D_{\Psi}(P) = \frac{d\Psi}{d \beta}D_{\beta}(P)(O)\ = E_P(1,1,W)D_{\beta}(P)(O)$$ 
 
-$$ \Psi(P_{\epsilon}) - \Psi(P) = E_{P_{\epsilon}}[(1,1,W)\beta_{\epsilon}]- E_{P}[(1,1,W)\beta]$$
-$$= E_{P}[(1,1,W)(\beta_{\epsilon}-\beta)]+E_{P_{\epsilon}}[(1,1,W)\beta_{\epsilon}] -  E_{P}[(1,1,W)\beta_{\epsilon}]$$
-$$=E_P[(1,1,W)(\beta_{\epsilon}-\beta)] + \int(1,1,w)\beta_{\epsilon}(1+\epsilon s(o))p(o)d_{\nu}(o) - \int(1,1,w)\beta_{\epsilon}p(o)d_{\nu}(o)$$
-Next, we divide by $\epsilon$ and take the limit $\epsilon \rightarrow 0$ we get, upon setting $\text{lim}_{\epsilon \rightarrow 0}\frac{\beta_{\epsilon}-\beta}{\epsilon}=E_P[D_{\beta}(P)(O)S(O)]=<D_{\beta}(P)(O),S(O)>_P$ 
+Next, we compute $D^*_{\beta}(P)(O)$: 
 
-$$= $$
+Because $\Psi^{1}(P) = \beta = \text{argmin}{\gamma}E_P\big[(Y - (1,A,W) \gamma )^2 \big]$, 
+$\beta$ satisfies 
 
+$$\frac{d}{d\beta}\text{argmin}{\gamma}E_{P}\big[(Y - (1,A,W)\beta)^2\big] = 0_{d\times 1}\Rightarrow 2\Big[E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]\Big] = 0_{d\times 1}\Rightarrow E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] = 0_{d\times 1}\ \ \ \ \ \ \ (1)$$ 
 
-Extra info for deriving the eIC of the $\beta$ but im not sure if this is necessary considering the steps above:
-$$\frac{d}{d\epsilon}\Psi^1(P_\epsilon)|_{\epsilon=0}=\frac{d}{d\epsilon}\Big[\text{argmin}_{\gamma}E_{P_{\epsilon}}(Y - (1,A,W)\gamma)^2\Big]|_{\epsilon=0}=0_{d \times1}$$
+And because $\Psi^{1}(P_\epsilon) = \beta_{\epsilon} = \text{argmin}{\gamma}E_{P_\epsilon}\big[(Y - (1,A,W)\gamma)^2\big]$,
+$\beta_{\epsilon}$ satisfies 
+
+$$\frac{d}{d\beta_\epsilon}\text{argmin}{\gamma}E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)^2 = 0_{d\times 1}\big] \Rightarrow 2\Big[E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big]\Big] = 0_{d\times 1}\Rightarrow E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d\times 1}\ \ \ \ \ \ \ (2)$$ 
+
+From (1) and (2),
+
+$$E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d\times 1}$$
+$$\Rightarrow E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]+ E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d \times 1}\text{ .}$$ 
+
+Therefore, 
+
+$$E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^T\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^T\big]\ \ \ \ \ \ \ (3)$$ 
+
+$$ = E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]\text{ .}\ \ \ \ \ \ \ (4)$$
+
+Because 
+
+$$lim_{\epsilon \rightarrow 0}\frac{(4)}{\epsilon} = E_{P_\epsilon}(Y - (1,A,W)\frac{\beta_\epsilon-\beta}{\epsilon})(1, A, W)^{\top}$$ 
+$$ = lim_{\epsilon \rightarrow 0} \ E_{P_\epsilon} (1,A,W)^{\top}(1,A,W)\frac{\beta_\epsilon-\beta}{\epsilon}) = E_{P} (1,A,W)^{\top}(1,A,W)\frac{d \Psi^{1}(P_\epsilon)}{d\epsilon}|_{\epsilon = 0}\ \ \ \ \ \ \ (5)\text{ .}$$
+
+Also, because
+$$lim_{\epsilon \rightarrow 0} \ \frac{(3)}{\epsilon}\ = lim_{\epsilon \rightarrow 0} \int (Y - (1,A,W))\beta(1,A,W)^{\top}\frac{P_\epsilon(O)-P(O)}{\epsilon}d\nu(O)$$
+
+and because 
+$$P_\epsilon(O) = (1+\epsilon h)P(O))\ = \int (Y - (1,A,W))\beta(1,A,W)^{\top}S(O)P(O)d\nu(O)\ = E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}S(O)]\ \ \ \ \ \ \ (6)\text{ .}$$ 
+
+Therefore, $(5) = (6)$ implies, 
+$$E_P (1,A,W)^{\top}(1,A,W)\frac{d \Psi^{1}(P_\epsilon)}{d\epsilon}|_{\epsilon = 0}\ = E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}S(O)]$$
+
+This implies 
+$$\frac{d \Psi^{'}(P\epsilon)}{d\epsilon}|_{\epsilon = 0}\ = \big[E_{P} (1,A,W)^{\top}(1,A,W)\big]^{-1}E_P\big[(Y-(1,A,W))\beta(1,A,W)^{\top}S(O)\big]=<\big[E_{P} (1,A,W)^{\top}(1,A,W)\big]^{-1}E_P\big[(Y-(1,A,W))\beta(1,A,W)^{\top}\big],S(O)> { .}$$
+
+Thus, 
+$$D_\beta(P)(O) = [E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}]\text{ .}$$
+So, 
+$$D_{\Psi}(P) = E_P(1,1,W)[E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}]$$
+and 
+
+$$D^*_{\Psi}(P) = E_P(1,1,W)[E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}]-\Psi(P)\text{ .}$$
+
+Finally, 
+
+$$D^*_{\Psi}(\textbf{P}_n) = E_P(1,1,W)[E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}]-\Psi(\textbf{P}_n)\text{ .}$$
 
 (b) Consider the following data generating process: $W_1, W_2$ are standard normals, $Pr(A = 1) = expit(1 + 0.4W_1 - 0.4W_2W_1)$, $Y = (W_1 + W_2)^2 + \epsilon$, $\epsilon \sim N[0,1]$. What is the true parameter value, $\Psi(P_0)$, for this data generating process?
 
