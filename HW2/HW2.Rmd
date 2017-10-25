@@ -1,6 +1,6 @@
 ---
 title: 'PH C240B: Assignment 2'
-author: "Yue You"
+author: "Rachael Phillips"
 date: "10/20/2017"
 output: 
   pdf_document: default
@@ -135,12 +135,20 @@ $$\frac{d}{d\beta}\text{argmin}{\gamma}E_{P}\big[(Y - (1,A,W)\beta)^2\big] = 0_{
 And because $\Psi^{1}(P_\epsilon) = \beta_{\epsilon} = \text{argmin}{\gamma}E_{P_\epsilon}\big[(Y - (1,A,W)\gamma)^2\big]$,
 $\beta_{\epsilon}$ satisfies 
 
-$$\frac{d}{d\beta_\epsilon}\text{argmin}{\gamma}E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)^2 = 0_{d\times 1}\big] \Rightarrow 2\Big[E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big]\Big] = 0_{d\times 1}\Rightarrow E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d\times 1}\ \ \ \ \ \ \ (2)$$ 
+$$\frac{d}{d\beta_\epsilon}\text{argmin}{\gamma}E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)^2 = 0_{d\times 1}\big]$$ 
+This implies 
+
+$$2\Big[E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big]\Big] = 0_{d\times 1}$$ 
+
+which implies 
+
+$$E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d\times 1}\ \ \ \ \ \ \ (2)\text{ .}$$ 
 
 From (1) and (2),
 
 $$E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d\times 1}$$
-$$\Rightarrow E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]+ E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d \times 1}\text{ .}$$ 
+which implies
+$$E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]+ E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d \times 1}\text{ .}$$ 
 
 Therefore, 
 
@@ -163,7 +171,9 @@ Therefore, $(5) = (6)$ implies,
 $$E_P (1,A,W)^{\top}(1,A,W)\frac{d \Psi^{1}(P_\epsilon)}{d\epsilon}|_{\epsilon = 0}\ = E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}S(O)]$$
 
 This implies 
-$$\frac{d \Psi^{'}(P\epsilon)}{d\epsilon}|_{\epsilon = 0}\ = \big[E_{P} (1,A,W)^{\top}(1,A,W)\big]^{-1}E_P\big[(Y-(1,A,W))\beta(1,A,W)^{\top}S(O)\big]=<\big[E_{P} (1,A,W)^{\top}(1,A,W)\big]^{-1}E_P\big[(Y-(1,A,W))\beta(1,A,W)^{\top}\big],S(O)> { .}$$
+$$\frac{d \Psi^{'}(P\epsilon)}{d\epsilon}|_{\epsilon = 0}\ = \ \big[E_{P} (1,A,W)^{\top}(1,A,W)\big]^{-1}E_P\big[(Y-(1,A,W))\beta(1,A,W)^{\top}S(O)\big]$$
+
+$$= \ <\big[E_{P} (1,A,W)^{\top}(1,A,W)\big]^{-1}E_P\big[(Y-(1,A,W))\beta(1,A,W)^{\top}\big],S(O)> { .}$$
 
 Thus, 
 $$D_\beta(P)(O) = [E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}]\text{ .}$$
@@ -196,6 +206,6 @@ We assume the NPMLE is well-behaved in the sense that it estimates the parameter
 
 ### Collaborators & Resources
 
-Tommy Carpenito, Rachael Philips
+Tommy Carpenito, Yue You
 
 Jonathan's lab3sol
