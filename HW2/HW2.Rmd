@@ -130,7 +130,11 @@ Next, we compute $D^*_{\beta}(P)(O)$:
 Because $\Psi^{1}(P) = \beta = \text{argmin}{\gamma}E_P\big[(Y - (1,A,W) \gamma )^2 \big]$, 
 $\beta$ satisfies 
 
-$$\frac{d}{d\beta}\text{argmin}{\gamma}E_{P}\big[(Y - (1,A,W)\beta)^2\big] = 0_{d\times 1}\Rightarrow 2\Big[E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]\Big] = 0_{d\times 1}\Rightarrow E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] = 0_{d\times 1}\ \ \ \ \ \ \ (1)$$ 
+$$\frac{d}{d\beta}\text{argmin}{\gamma}E_{P}\big[(Y - (1,A,W)\beta)^2\big] = 0_{d\times 1}\Rightarrow 2\Big[E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]\Big] = 0_{d\times 1}$$ 
+
+This implies 
+
+$$E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] = 0_{d\times 1}\ \ \ \ \ \ \ (1)$$ 
 
 And because $\Psi^{1}(P_\epsilon) = \beta_{\epsilon} = \text{argmin}{\gamma}E_{P_\epsilon}\big[(Y - (1,A,W)\gamma)^2\big]$,
 $\beta_{\epsilon}$ satisfies 
@@ -148,7 +152,9 @@ From (1) and (2),
 
 $$E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d\times 1}$$
 which implies
-$$E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]+ E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d \times 1}\text{ .}$$ 
+$$E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]$$
+
+$$ + \ E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big] = 0_{d \times 1}\text{ .}$$ 
 
 Therefore, 
 
@@ -204,8 +210,11 @@ Bonus question: What is the remainder term for your estimator in part (a)? What 
 
 We assume the NPMLE is well-behaved in the sense that it estimates the parameters in the second-order remainder at a rate faster than $n^{-1/4}$ (i.e. consistent at rate < $n^{-1/4}$). Then, $R_2(\textbf{P}_n,P_0)=o_P(n^{-1/2})$ and $\Psi(\textbf{P}_n)-\Psi(P_0) = (P_n-P_0)D^*(\textbf{P}_n) + o_P(n^{-1/2})$. We had to make this assumption to derive the efficient influece curve for the NPMLE and the remainder term in part (a) is 
 
+$$R_2(\textbf{P}_n,P_0) = \Psi(\textbf{P}_n) - \Psi(P_0) - (P_n - P_0)D^*_{\Psi}(\textbf{P}_n)$$
+where $\Psi(\textbf{P}_n)=\frac{1}{n}\sum_{i=1}^n(1,1,W_i)\hat{\beta}$, $\Psi(P_0) = E_P[(1,1,W_i)\beta]$, $P_n$ is the empirical measure, $P_0$ is the true data distribution, and $D^*_{\Psi}(\textbf{P}_n)$ is defined in part (a). Note that $(P_n - P_0)D^*_{\Psi}(\textbf{P}_n)$ is the empirical processes applied to random functions, not a sum of i.i.d random variables because the random variable is defined by the data. 
+
 ### Collaborators & Resources
 
 Tommy Carpenito, Yue You
 
-Jonathan's lab3sol
+Jonathan's lab3sol & OH
