@@ -46,14 +46,11 @@ sim.cov = function(n) {
   T_ord = Ttilde[order(Ttilde)]
   D_ord = Delta[order(Ttilde)]
   
-  
-  ##### CHANGES MADE ######
   # Get all known death times in order and compute the hazard at such times
   # lambda = km$n.event[D_ord]/km$n.risk[D_ord]
   T_death = T_ord[D_ord]
   nrisk = vapply(T_death, FUN = function(x) sum(Ttilde >= x), FUN.VALUE = 1)
   lambda = 1/nrisk
-  #########################
   
   # compute the prob of surviving up to or past each death time
   Pbar = vapply(T_death, FUN = function(time) mean(Ttilde >= time), FUN.VALUE = 1)
@@ -72,7 +69,7 @@ sim.cov = function(n) {
   }, FUN.VALUE = rep(1,n))
   
   
-  # COMPUTE THE CORRELATION and draw the random three-d normals
+  # compute the correlation and draw the random three-d normals
   Sigma = cor(IC)
   z = rmvnorm(1e6, c(0,0,0), Sigma)
   
@@ -88,7 +85,7 @@ sim.cov = function(n) {
   
   indy_cov = all(Cov50, Cov60, Cov70)
   
-  # simultaneous for 40, 50, 60
+  # simultaneous for 50, 60, 70
   Sim50 = km_step(50) - SE_num*sd(IC[,1])*sqrt(n-1)/n <= S0(50) & 
     S0(50) <= km_step(50) + SE_num*sd(IC[,1])*sqrt(n-1)/n
   Sim60 = km_step(60) - SE_num*sd(IC[,2])*sqrt(n-1)/n <= S0(60) & 
@@ -113,7 +110,7 @@ res = do.call(rbind, ALL)
 colMeans(res)
 ```
 
-We calculated 'indy_cov' based on the combination of individually based confidence intervals (i.e. a confidence for \textit{one} time point) and we see that, even though each confidence interval probably covers it's correspond truth 95\% of the time, these individual confidence intervals only cover the truth simultaneously (i.e. across our set of time points) roughly 91\% of the time. Alternatively, we calculated 'sim_cov' based on a 95\% simultaneous confidence interval. A simultaneous confidence interval is constructed according to a \textit{set} of points and simultaneous confidence intervals stem from a multivariate normal distribution with mean equal to 0 and variance equal to the correlation matrix of the covariance matrix for the set. They are also wider than individually based confidence intervals because they need to cover a set of points opposed to a singular point. For a simutaneous confidence interval, we expect all intervals to contain their corresponding truth with 95\% confidence and, indeed, we see that this is the case as the 'sim_cov' is exactly 95\%!
+We calculated 'indy_cov' based on the combination of individually based confidence intervals (i.e. a confidence for \textit{one} time point) and we see that, even though each confidence interval probably covers it's correspond truth 95\% of the time, these individual confidence intervals only cover the truth simultaneously (i.e. across our set of time points) roughly 91\% of the time. Alternatively, we calculated 'sim_cov' based on a 95\% simultaneous confidence interval. A simultaneous confidence interval is constructed according to a \textit{set} of points and simultaneous confidence intervals stem from a multivariate normal distribution with mean equal to 0 and variance equal to the correlation matrix of the covariance matrix for the set. They are also wider than individually based confidence intervals because they need to cover a set of points opposed to a singular point. For a simutaneous confidence interval, we expect all intervals to contain their corresponding truth with 95\% confidence and, indeed, we see that this is the case as the 'sim_cov' is almost exactly 95\%!
 
 ## Problem 2
 
@@ -121,26 +118,29 @@ Let $(W,A,Y)$ be the observed data with distribution, $P_0 \in M$ nonparametric.
 
 (a) The empirical distribution, $\textbf{P}_n$, is the NPMLE for the true distribution. We use $\textbf{P}_n$ as a plug-in estimator, $\Psi(\textbf{P}_n)$, for the true parameter, $\Psi(P_0)$. This is called the NPMLE for $\Psi(P_0)$. Derive this estimator’s influence curve. You may derive the efficient influence curve, $D^*_{\Psi}(P)$ first and then your answer is $D^*_{\Psi}(\textbf{P}_n)$  This is a valid approach but not the only approach.
 
-Because $\Psi(P)$ is a function of $\Psi^1(P)$ we first derive the efficient influence curve for $\Psi^1(P)=\beta=\text{argmin}{\gamma}E_P\big[(Y - (1,A,W)\gamma)^2\big]$. First we need to compute the pathwise derivative (also let's assume that W is $d$-dimensional):
+Because $\Psi(P)$ is a function of $\Psi^1(P)$ we first derive the influence curve for $\Psi^1(P)=\beta=\text{argmin}{\gamma}E_P\big[(Y - (1,A,W)\gamma)^2\big]$. First we need to compute the pathwise derivative (also let's assume that W is $d$-dimensional):
 
 $$D_{\Psi}(P) = \frac{d\Psi}{d \beta}D_{\beta}(P)(O)\ = E_P(1,1,W)D_{\beta}(P)(O)$$ 
 
-Next, we compute $D^*_{\beta}(P)(O)$: 
+\textbf{First, we compute $D_{\beta}(P)(O)$:} 
 
 Because $\Psi^{1}(P) = \beta = \text{argmin}{\gamma}E_P\big[(Y - (1,A,W) \gamma )^2 \big]$, 
 $\beta$ satisfies 
 
-$$\frac{d}{d\beta}\text{argmin}{\gamma}E_{P}\big[(Y - (1,A,W)\beta)^2\big] = 0_{d\times 1}\Rightarrow 2\Big[E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]\Big] = 0_{d\times 1}$$ 
+$$\frac{d}{d\beta}\text{argmin}{\gamma}E_{P}\big[(Y - (1,A,W)\beta)^2\big] = 0_{d\times 1} \text{ .}$$
 
-This implies 
+Thus, 
+$$2\Big[E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]\Big] = 0_{d\times 1}$$ 
 
-$$E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] = 0_{d\times 1}\ \ \ \ \ \ \ (1)$$ 
+and 
 
-And because $\Psi^{1}(P_\epsilon) = \beta_{\epsilon} = \text{argmin}{\gamma}E_{P_\epsilon}\big[(Y - (1,A,W)\gamma)^2\big]$,
+$$E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] = 0_{d\times 1}\ \ \ \ \ \ \ (1)\text{ .}$$ 
+
+Also, because $\Psi^{1}(P_\epsilon) = \beta_{\epsilon} = \text{argmin}{\gamma}E_{P_\epsilon}\big[(Y - (1,A,W)\gamma)^2\big]$,
 $\beta_{\epsilon}$ satisfies 
 
 $$\frac{d}{d\beta_\epsilon}\text{argmin}{\gamma}E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)^2 = 0_{d\times 1}\big]$$ 
-This implies 
+we have that 
 
 $$2\Big[E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^{\top}\big]\Big] = 0_{d\times 1}$$ 
 
@@ -162,30 +162,32 @@ $$E_{P_\epsilon}\big[(Y - (1,A,W)\beta_\epsilon)(1, A, W)^T\big] - E_{P_\epsilon
 
 $$ = E_{P}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big] - E_{P_\epsilon}\big[(Y - (1,A,W)\beta)(1, A, W)^{\top}\big]\text{ .}\ \ \ \ \ \ \ (4)$$
 
-Because 
+For
 
 $$lim_{\epsilon \rightarrow 0}\frac{(4)}{\epsilon} = E_{P_\epsilon}(Y - (1,A,W)\frac{\beta_\epsilon-\beta}{\epsilon})(1, A, W)^{\top}$$ 
 $$ = lim_{\epsilon \rightarrow 0} \ E_{P_\epsilon} (1,A,W)^{\top}(1,A,W)\frac{\beta_\epsilon-\beta}{\epsilon}) = E_{P} (1,A,W)^{\top}(1,A,W)\frac{d \Psi^{1}(P_\epsilon)}{d\epsilon}|_{\epsilon = 0}\ \ \ \ \ \ \ (5)\text{ .}$$
 
-Also, because
+Also,
 $$lim_{\epsilon \rightarrow 0} \ \frac{(3)}{\epsilon}\ = lim_{\epsilon \rightarrow 0} \int (Y - (1,A,W))\beta(1,A,W)^{\top}\frac{P_\epsilon(O)-P(O)}{\epsilon}d\nu(O)$$
 
 and because 
 $$P_\epsilon(O) = (1+\epsilon h)P(O))\ = \int (Y - (1,A,W))\beta(1,A,W)^{\top}S(O)P(O)d\nu(O)\ = E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}S(O)]\ \ \ \ \ \ \ (6)\text{ .}$$ 
 
-Therefore, $(5) = (6)$ implies, 
+Therefore, from $(5) = (6)$ it follows that, 
 $$E_P (1,A,W)^{\top}(1,A,W)\frac{d \Psi^{1}(P_\epsilon)}{d\epsilon}|_{\epsilon = 0}\ = E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}S(O)]$$
 
-This implies 
+which implies 
 $$\frac{d \Psi^{'}(P\epsilon)}{d\epsilon}|_{\epsilon = 0}\ = \ \big[E_{P} (1,A,W)^{\top}(1,A,W)\big]^{-1}E_P\big[(Y-(1,A,W))\beta(1,A,W)^{\top}S(O)\big]$$
 
 $$= \ <\big[E_{P} (1,A,W)^{\top}(1,A,W)\big]^{-1}E_P\big[(Y-(1,A,W))\beta(1,A,W)^{\top}\big],S(O)> { .}$$
-
 Thus, 
 $$D_\beta(P)(O) = [E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}]\text{ .}$$
-So, 
+(P.S. Thank you Jonathan for your help in solving the influence curve for $\beta$!)
+
+\textbf{Now we compute $D_{\Psi}(P)$:}
+
 $$D_{\Psi}(P) = E_P(1,1,W)[E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}]$$
-and 
+and it follows that  
 
 $$D^*_{\Psi}(P) = E_P(1,1,W)[E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}E_P[(Y-(1,A,W))\beta(1,A,W)^{\top}]-\Psi(P)\text{ .}$$
 
@@ -195,12 +197,90 @@ $$D^*_{\Psi}(\textbf{P}_n) = E_P(1,1,W)[E_{P} (1,A,W)^{\top}(1,A,W)]^{-1}E_P[(Y-
 
 (b) Consider the following data generating process: $W_1, W_2$ are standard normals, $Pr(A = 1) = expit(1 + 0.4W_1 - 0.4W_2W_1)$, $Y = (W_1 + W_2)^2 + \epsilon$, $\epsilon \sim N[0,1]$. What is the true parameter value, $\Psi(P_0)$, for this data generating process?
 
+To determine the true parameter value, $\Psi(P_0)$, we ran a simulation:
+```{r, cache=TRUE}
+expit <- function(x){
+  1/(1+exp(-x))  
+} 
+
+# generate the data
+n <- 10000
+W1 <- rnorm(n, 0, 1)
+W2 <- rnorm(n, 0, 1)
+A <- rbinom(n, 1, expit(1 + .4 * W1 - .4 * W2 * W1))
+epsilon <- rnorm(n, 0 ,1)
+Y <- (W1 + W2)^2 + epsilon
+
+df <- data.frame(W1, W2, A, Y)
+
+beta_hat <- lm(Y ~ ., data = df)
+
+mean(beta_hat$fitted.values)
+
+# pseudo-counterfactual dataframe forcing the treatment to 1 
+cf_df <- df  
+cf_df$A <- 1
+cf_df <- cf_df[c("W1", "W2", "A")]
+  
+pred <- predict(beta_hat, cf_df)
+
+mean(pred)
+```
+
 (c) Now consider the parameter, $\Psi^2(P) = E_P E_P [Y | A = 1, W ]$ or the true treatment specific mean for our non-parametric model. What is the true parameter value for the data generating process in part (b)?
+
+The treatment specific mean is $E_{U,X}[Y(A=1)]$. Since $A$ is fixed, $Y$ is not directly affected by $A$ so we can simply solve the mean of our $Y$ values to find the treatment specific mean. Note that $Y$ is indirectly affected by $A$ through $W1$ and $W2$. We have that
+
+$$E_{U,X}[Y(A=1)]=EE[Y|A=1,W]$$
+
+When we condition on both $A$ and $W$, we are making the assumption that $Y \bot A|W$.
+
+```{r, cache=TRUE}
+
+n <- 10000
+W1 <- rnorm(n, 0, 1)
+W2 <- rnorm(n, 0, 1)
+A <- 1
+epsilon <- rnorm(n, 0 ,1)
+Y <- (W1 + W2)^2 + epsilon
+
+df <- data.frame(W1, W2, A, Y)
+
+mean(df$Y)
+```
 
 (d) Run a simulation where you take 1000 draws of $n = 1000$ from the data generating process in part (b). Using your NPMLE from part (a) and its influence curve to form 95\% Wald confidence intervals, check coverage of the true $\Psi$ and $\Psi^2$ for each draw. Report the coverage percentage for each parameter. Considering that estimating $\Psi$ is often used to estimate $\Psi^2$, comment on your results.
 
 ```{r}
+sim <- function(n) {
+W1 <- rnorm(n, 0, 1)
+W2 <- rnorm(n, 0, 1)
+A <- rbinom(n, 1, expit(1 + .4 * W1 - .4 * W2 * W1))
+epsilon <- rnorm(n, 0 ,1)
+Y <- (W1 + W2)^2 + epsilon
+df <- data.frame(W1, W2, A, Y)
+cf_df <- df  
+cf_df$A <- 1
+pred <- predict(beta_hat, cf_df)
 
+mean(pred)
+# true Psi_1 from part (b)
+Psi_1 <- 1.75
+# true Psi_2 from part (c)
+Psi_2 <- 2
+
+}
+sim(1000)
+
+registerDoParallel(cores = detectCores())
+getDoParWorkers()
+
+B <- 1000
+n <- 1000
+ALL <- foreach(i=1:B,.packages=c("mvtnorm"), .errorhandling = "remove") %dopar% {sim(n)}
+res <- do.call(rbind, ALL)
+
+colMeans(res)
 
 ```
 
