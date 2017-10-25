@@ -142,14 +142,21 @@ from (1)(2)\therefore E_{P}(Y - (1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}(Y - (1
 \Rightarrow E_{P}(Y - (1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}(Y - (1,A,W)\beta)(1, A, W)^T \\+  E_{P_\epsilon}(Y - (1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}(Y - (1,A,W)\beta_\epsilon)(1, A, W)^T = 0_{d\times 1}\\
 \therefore E_{P_\epsilon}(Y - (1,A,W)\beta_\epsilon)(1, A, W)^T - E_{P_\epsilon}(Y - (1,A,W)\beta)(1, A, W)^T.......(3)\\
 = E_{P}(Y - (1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}(Y - (1,A,W)\beta)(1, A, W)^T..........(4)\\
-\because lim_{\epsilon \rightarrow 0}\frac{(3)}{\epsilon}\\
+\because lim_{\epsilon \rightarrow 0}\frac{(4)}{\epsilon}\\
 = E_{P_\epsilon}(Y - (1,A,W)\frac{\beta_\epsilon-\beta}{\epsilon})(1, A, W)^T\\
+= lim_{\epsilon \rightarrow 0} E_{P_\epsilon} (1,A,W)^T(1,A,W)\frac{\beta_\epsilon-\beta}{\epsilon})\\
+= E_{P_\epsilon} (1,A,W)^T(1,A,W)\frac{d \Psi^{'}(P_\epsilon)}{d\epsilon}|_{\epsilon = 0}.........(5)\\
+And \because lim_{\epsilon \rightarrow 0}\frac{(3)}{\epsilon}\\
 = lim_{\epsilon \rightarrow 0} \int (Y - (1,A,W))\beta(1,A,W)^T\frac{P_\epsilon(O)-P(O)}{\epsilon}dv(O)(\because P_\epsilon(O) = (1+\epsilon h)P(O))\\
 = \int (Y - (1,A,W))\beta(1,A,W)^TS(O)P(O)dv(O)\\
-= E_p[(Y-(1,A,W))\beta(1,A,W)^TS(O)].........(5)\\
-On\ the\ other\ hand, (4) = E_{P}((1,A,W)\beta)(1, A, W)^T - E_{P_\epsilon}((1,A,W)\beta)(1, A, W)^T\\
-\\\ lim_{\epsilon \rightarrow 0}\frac{(4)}{\epsilon}\\
-=
+= E_p[(Y-(1,A,W))\beta(1,A,W)^TS(O)].........(6)\\
+\therefore (5) = (6)\\
+\Rightarrow E_{P_\epsilon} (1,A,W)^T(1,A,W)\frac{d \Psi^{'}(P_\epsilon)}{d\epsilon}|_{\epsilon = 0}\\
+= E_p[(Y-(1,A,W))\beta(1,A,W)^TS(O)]\\
+\Rightarrow \frac{d \Psi^{'}(P_\epsilon)}{d\epsilon}|_{\epsilon = 0}\\
+= [E_{P_\epsilon} (1,A,W)^T(1,A,W)]^{-1}E_p[(Y-(1,A,W))\beta(1,A,W)^TS(O)]\\
+\Rightarrow D^*_\beta(P)(O) = [E_{P_\epsilon} (1,A,W)^T(1,A,W)]^{-1}E_p[(Y-(1,A,W))\beta(1,A,W)^T]\\
+\Rightarrow D^*_{\Psi}(P) = E_P(1,1,W)[E_{P_\epsilon} (1,A,W)^T(1,A,W)]^{-1}E_p[(Y-(1,A,W))\beta(1,A,W)^T]
 $$
 
 (b) Consider the following data generating process: $W_1, W_2$ are standard normals, $Pr(A = 1) = expit(1 + 0.4W_1 - 0.4W_2W_1)$, $Y = (W_1 + W_2)^2 + \epsilon$, $\epsilon \sim N[0,1]$. What is the true parameter value, $\Psi(P_0)$, for this data generating process?

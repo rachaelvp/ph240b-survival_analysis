@@ -1,6 +1,6 @@
 ---
 title: 'PH C240B: Assignment 2'
-author: "Rachael Phillips"
+author: "Yue You"
 date: "10/20/2017"
 output: 
   pdf_document: default
@@ -155,6 +155,6 @@ We assume the NPMLE is well-behaved in the sense that it estimates the parameter
 
 ### Collaborators & Resources
 
-Tommy Carpenito, Yue You
+Tommy Carpenito, Rachael Philips
 
 Jonathan's lab3sol
