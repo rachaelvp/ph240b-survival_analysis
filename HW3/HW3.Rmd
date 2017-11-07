@@ -7,11 +7,7 @@ output:
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(dplyr)
-library(doParallel)
-library(mvtnorm)
 library(survival)
-library(ggplot2)
 library(survminer)
 ```
 
@@ -61,10 +57,31 @@ $$ = \int S_2(c,x)dP(x|O=o)d\nu(x)$$
 $$ = E\big[S_2(C,X)|O=o\big]\text{ .}$$
 
 ### Problem 4
-This problem involves simulating data under a general Cox model. Let’s make the assumption we have a conditional hazard of death at time, $t$, given by $\lambda(t | X) =  \lambda_0(t)exp(f_{\beta}(X))$ where $X$ is a set of covariates and $f_{\beta}$ is a function indexed by $\beta$, say finite dimensional. Assume the baseline hazard is  $\lambda_0(t) = exp(rt)$ for positive $r$. Given $X$, what is the distribution of death times? Prove your answer.
+This problem involves simulating data under a general Cox model. Let’s make the assumption we have a conditional hazard of death at time, $t$, given by $\lambda(t | X) =  \lambda_0(t)exp(f_{\beta}(X))$ where $X$ is a set of covariates and $f_{\beta}$ is a function indexed by $\beta$, say finite dimensional. Assume the baseline hazard is $\lambda_0(t) = exp(rt)$ for positive $r$. Given $X$, what is the distribution of death times? Prove your answer.
 
 \vspace{.1in}
 
+$$\lambda(t | X) =  \lambda_0(t)exp(f_{\beta}(X)) = lim_{dt\rightarrow0} \frac{Pr(t \leq T < t + dt |T \geq t, X)}{dt}$$
+
+The conditional probability in the numerator may be written as the ratio of the joint probability that $T$ is in the interval $[t, t + dt)$, $T \geq t$, and $X$ (which is, of course, the same as the probability that $t|X$ is in the interval), to the probability of the condition $T \geq t|X$. The former may be written as $f(t|X)dt$ for small $dt$, while the latter is $S(t|X)$ by definition ($S(t|X) = Pr(T \geq t|X)=1-F(t|X)=\int_t^{\infty}f(s)ds$). Dividing by $dt$ and passing to the limit gives the result 
+
+$$\lambda(t | X) = \frac{f(t|X)}{S(t|X)}$$
+In words, given $X$, the rate of occurrence of the event at duration $t$ equals the density of events at $t$ given $X$, divided by the probability of surviving to that duration without experiencing the event given $X$. Note from the definition of the survival function that $-f(t|X)$ is the derivative of $S(t|X)$. Thus, we can rewrite the above equation as 
+
+$$\lambda(t|X)=-\frac{d}{dt}logS(t|X)$$
+If we now integrate from 0 to $t$ and introduce the boundary condition $S(0) = 1$ (since the event is sure not to have occurred by duration 0), we can solve the above expression to obtain a formula for the probability of surviving to duration $t$ given $X$ as a function of the hazard at all durations up to $t$ given $X$:
+
+$$S(t|X) \sim U[0,1] = exp(-\int_0^t\lambda(s|X)ds)$$
+
+Notice that $\int_0^t\lambda(s|X)ds = \Lambda(t|X)$, the cumulative hazard. 
+
+Now we need to plug in our given conditional hazard of death at time, $t$ given the covariates $X$ and solve for $t$ in order to find the distribution of death times.
+$$S(t|X) \sim U[0,1] = exp(-\int_0^t\lambda_0(s)exp(f_{\beta}(s|X))ds)$$
+$$S(t|X) \sim U[0,1] = exp(-\int_0^texp(rs)exp(f_{\beta}(s|X))ds)$$
+
+$$-log\big(S(t|X) \sim U[0,1]\big) = exp(-\int_0^texp(rs)exp(f_{\beta}(s|X))ds)$$
+
+NOT FINISHED 
 
 ### Problem 5
 Complete the first problem from LabCox in the lab section of the files on bCourses.
@@ -135,3 +152,7 @@ Assume a CAR model for full data consisting of survival time, censoring time, th
 
 ```
 
+
+### Collaborators & Resources
+
+Tommy Carpenito, Yue You, Jonathan Levy
