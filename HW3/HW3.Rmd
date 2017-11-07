@@ -79,7 +79,7 @@ Now we need to plug in our given conditional hazard of death at time, $t$ given 
 $$S(t|X) \sim U[0,1] = exp(-\int_0^t\lambda_0(s)exp(f_{\beta}(s|X))ds)$$
 $$S(t|X) \sim U[0,1] = exp(-\int_0^texp(rs)exp(f_{\beta}(s|X))ds)$$
 
-$$-log\big(S(t|X) \sim U[0,1]\big) = exp(-\int_0^texp(rs)exp(f_{\beta}(s|X))ds)$$
+$$-log\big(S(t|X) \sim U[0,1]\big) = (-\int_0^texp(rs)exp(f_{\beta}(s|X))ds)$$
 
 NOT FINISHED 
 
