@@ -7,11 +7,12 @@ output:
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(ggplot2)
-library(survival)
 library(dplyr)
 library(doParallel)
 library(mvtnorm)
+library(survival)
+library(ggplot2)
+library(survminer)
 ```
 
 ### Problem 1
@@ -64,25 +65,73 @@ This problem involves simulating data under a general Cox model. Let’s make th
 
 \vspace{.1in}
 
-```{r}
-
-```
 
 ### Problem 5
 Complete the first problem from LabCox in the lab section of the files on bCourses.
 
 \vspace{.1in}
 
-```{r}
+Specifically, we are asked to use the model generated in the lab to simulate $1000$ draws of $n = 1000$ and check coverage on the coefficient, which represents the log of the hazard proportion between treated and non-treated, in this case. Also, according to the first problem from LabCox, "We also know that the true proportional hazard of treated to untreated is exp(-1), the coefficient of treatment being -1".
 
+```{r, cache=TRUE}
+# we repeat the experiment 1000 times
+N = 1000
+
+# allocating memory to store the experiment
+exp <- data.frame(Truth = numeric(N), Estimate = numeric(N), CI_lower = numeric(N), 
+                  CI_upper = numeric(N), CI_indicator = numeric(N))
+
+for(i in 1:N){
+  
+  # generating the original model
+  n = 1000
+  
+  # draw the W from standard normals
+  W1 = rnorm(n)
+  W2 = rnorm(n)
+  g0 = function(W1,W2) plogis(.1 + W1*W2)
+  A = rbinom(n, 1, g0(W1,W2))
+  
+  # draw T and C --both generated with random uniforms as perviously described but C could
+  # be generated anyway independent of T given W for identifiability purposes
+  C = -log(runif(n))/(.01*exp(.3*W1))
+  T =  -log(runif(n))/(.02*exp(2*W1^2 - A))
+  
+  Ttilde = pmin(T, C)
+  Delta = C >= T & T<= 100
+  
+  # Create the survival object
+  S = Surv(time = Ttilde, event = Delta, type = "right")
+  data = data.frame(A = A, W1 = W1, W2 = W2)
+  coxfit = coxph(S ~ ., data = data)
+  
+  truth <- exp(-1)
+  conf_interval <- as.data.frame(summary(coxfit)[8])
+  lower <- conf_interval$conf.int.lower..95[1]
+  upper <- conf_interval$conf.int.upper..95[1]
+  indicator <- as.numeric(truth >= lower && truth <= upper)
+  
+  # populating the data frame where we store our experiment 
+  exp$Estimate[i] <- conf_interval$conf.int.exp.coef.[1]
+  exp$Truth[i] <- exp(-1)
+  exp$CI_upper[i] <- upper
+  exp$CI_lower[i] <- lower
+  exp$CI_indicator[i] <- indicator
+}
+
+# calculating the coverage
+print(paste('Our coverage is', mean(exp$CI_indicator)))
 ```
 
+Our coverage on the coefficient, which represents the log of the hazard proportion between treated and non-treated, is 0, meaning none of our confidence intervals covered the true proportional hazard of treated to untreated. This is because we simulated data according to a model that defies the Cox assumption. That is, we assume the hazard of an individual with covariates $A$, $W_1$, $W_2$ at time, $t$, is $.02exp(2W_1^2-A)$, a main terms *non-linear* function of the hazard and the Cox assumption requires the main terms to be a *linear* functional form of the hazard.
+
 ### Bonus
-Assume a CAR model for full data consisting of survival time, censoring time, the continuous baseline covariates and randomly assigned treatment indicator. We have observed data $min(T,C),\Delta$ along with the covariates and treatment indicator. Someome receives a data set of 1000 independent subjects drawn from this model from an RCT and runs a Cox Proportional hazards regression with treatment as the only covariate, showing a significantly negative coefficient. Can you convince this person he may be wrong via simulation? Explain how you set up your simulation and turn in your code to show the results.
+Assume a CAR model for full data consisting of survival time, censoring time, the continuous baseline covariates and randomly assigned treatment indicator. We have observed data $min(T,C),\Delta$ along with the covariates and treatment indicator. Someome receives a data set of 1000 independent subjects drawn from this model from an RCT and runs a Cox Proportional Hazards regression with treatment as the only covariate, showing a significantly negative coefficient. Can you convince this person he may be wrong via simulation? Explain how you set up your simulation and turn in your code to show the results.
 
 \vspace{.1in}
 
 ```{r}
+
 
 ```
 

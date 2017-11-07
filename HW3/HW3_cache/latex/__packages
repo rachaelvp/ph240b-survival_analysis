@@ -1,0 +1,11 @@
+base
+dplyr
+foreach
+iterators
+doParallel
+mvtnorm
+survival
+ggplot2
+magrittr
+ggpubr
+survminer
