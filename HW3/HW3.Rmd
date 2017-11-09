@@ -75,13 +75,28 @@ $$S(t|X) \sim U[0,1] = exp(-\int_0^t\lambda(s|X)ds)$$
 
 Notice that $\int_0^t\lambda(s|X)ds = \Lambda(t|X)$, the cumulative hazard. 
 
-Now we need to plug in our given conditional hazard of death at time, $t$ given the covariates $X$ and solve for $t$ in order to find the distribution of death times.
-$$S(t|X) \sim U[0,1] = exp(-\int_0^t\lambda_0(s)exp(f_{\beta}(s|X))ds)$$
-$$S(t|X) \sim U[0,1] = exp(-\int_0^texp(rs)exp(f_{\beta}(s|X))ds)$$
+Now we need to plug in our given conditional hazard of death at time, $t$ given the covariates $X$ and solve for $t$ in order to find the distribution of death times. 
 
-$$-log\big(S(t|X) \sim U[0,1]\big) = (-\int_0^texp(rs)exp(f_{\beta}(s|X))ds)$$
+$$S(t|X) \sim U[0,1] = exp(-\int_0^t\lambda_0(s)exp(f_{\beta}(X))ds)$$
+$$S(t|X) \sim U[0,1] = exp(-\int_0^texp(rs)exp(f_{\beta}(X))ds)$$
 
-NOT FINISHED 
+$$log\big(S(t|X) \sim U[0,1]\big) = (-\int_0^texp(rs)exp(f_{\beta}(X))ds)$$
+
+$$log\big(S(t|X) \sim U[0,1]\big) = -exp(f_{\beta}(X))\int_0^texp(rs)ds$$ 
+$$log\big(S(t|X) \sim U[0,1]\big) = -exp(f_{\beta}(X))\Big(\frac{1}{r}exp(rs)|_0^t\Big)$$ 
+
+$$log\big(S(t|X) \sim U[0,1]\big) = -exp(f_{\beta}(X))\Big(\frac{1}{r}exp(rt)-\frac{1}{r}\Big)$$ 
+$$-log\big(S(t|X) \sim U[0,1]\big) = exp(f_{\beta}(X))\frac{1}{r}\Big(exp(rt)-1\Big)$$ 
+
+$$\frac{r\Big(-log\big(S(t|X) \sim U[0,1]\big)\Big)}{exp(f_{\beta}(X))} + 1 = exp(rt)$$ 
+
+$$\frac{log\Bigg(\frac{r\Big(-log\big(S(t|X) \sim U[0,1]\big)\Big)}{exp(f_{\beta}(X))} + 1\Bigg)}{r} = t$$ 
+
+We will can write $S(t|X) \sim U[0,1]$ as $U[0,1]$ because we know that in order to simulate the survival curve at time $t$ given covariates $X$, we just need to draw from a $U[0,1]$ distribution. Thus, 
+
+$$\frac{log\Bigg(\frac{r\Big(-log\big(U[0,1]\big)\Big)}{exp(f_{\beta}(X))} + 1\Bigg)}{r} = t$$ 
+
+is the distribution of death times given covariates $X$.
 
 ### Problem 5
 Complete the first problem from LabCox in the lab section of the files on bCourses.
@@ -109,8 +124,10 @@ for(i in 1:N){
   g0 = function(W1,W2) plogis(.1 + W1*W2)
   A = rbinom(n, 1, g0(W1,W2))
   
-  # draw T and C --both generated with random uniforms as perviously described but C could
-  # be generated anyway independent of T given W for identifiability purposes
+  # draw T and C --both generated with random uniforms 
+  # as perviously described but C could
+  # be generated anyway independent of T given W for
+  # identifiability purposes
   C = -log(runif(n))/(.01*exp(.3*W1))
   T =  -log(runif(n))/(.02*exp(2*W1^2 - A))
   
@@ -147,12 +164,70 @@ Assume a CAR model for full data consisting of survival time, censoring time, th
 
 \vspace{.1in}
 
-```{r}
+```{r, cache=TRUE}
+# we repeat the experiment 10,000 times
+N <- 1000
 
+# allocating memory to store the experiment
+exp <- data.frame(Truth = numeric(N), Estimate = numeric(N), CI_lower = numeric(N), CI_upper = numeric(N), CI_indicator = numeric(N))
 
+for(i in 1:N){
+  
+  n <- 1000
+  
+  # simulate a pseudo-truth 
+  W1 <- rnorm(n)
+  W2 <- rnorm(n)
+  W3 <- rnorm(n)
+  W4 <- rnorm(n)
+  W5 <- rnorm(n)
+  A <- rbinom(n, 1, .5)
+    
+  # we make C and T dependent on 
+  # covariates and we also 
+  # make C dependent on A,
+  # such that drop out is effected
+  # by treatment
+  C <- abs(W1+W2+W3+W4+W5+(20*A))
+  T <- abs(W2+W3+W4+W5+W1)
+  Ttilde <- pmin(T, C)
+  Delta <-  C >= T & T <= 1
+  S <- Surv(time = Ttilde, event = Delta, type = "right")
+  
+  # because T is not dependent on A, 
+  # the true coefficient for A is
+  # exp(0) = 1
+  truth <- 1
+  
+  # they run a Cox Proportional Hazards regression 
+  # with treatment as the only covariate
+  incomplete_data <- data.frame(A)
+  coxfit <- coxph(S ~ A, data = incomplete_data)
+  
+  # did they cover the truth in their misspecified model?
+  conf_interval <- as.data.frame(summary(coxfit)[8])
+  upper <- conf_interval$conf.int.upper..95[1]
+  lower <- conf_interval$conf.int.lower..95[1]
+  indicator <- as.numeric(truth >= lower && truth <= upper)
+  
+  # populating the data frame where we store our experiment 
+  exp$Estimate[i] <- conf_interval$conf.int.exp.coef.[1]
+  exp$Truth[i] <- 1
+  exp$CI_upper[i] <- upper
+  exp$CI_lower[i] <- lower
+  exp$CI_indicator[i] <- indicator
+}
+
+# calculating the coverage
+mean(exp$CI_indicator)
 ```
 
+We see that when there is dependence on the censoring mechanism from the treatment and there are covariates, the Cox Proportional Hazards regression with treatment as the only covariate poorly covers (only about 10\% of the time in our case) the corresponding true coefficient of the treatment variable. 
 
 ### Collaborators & Resources
 
 Tommy Carpenito, Yue You, Jonathan Levy
+
+Survival Model online notes: http://data.princeton.edu/wws509/notes/c7.pdf
+
+Gill, van der Lann, Robins, Coarsening at Random: Characterizations, Conjectures, Counter-Examples (1997) 
