@@ -9,13 +9,14 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 library(survival)
 library(survminer)
+load("~/Downloads/longdata.RData")
 ```
 
-Load longdata.RData from bCourses. You may use Odat.long or Odat.wide for your analysis. They are identical except for the format. The columns are labeled according to how we normally notate them. A1's are the binary treatments, A2's are the censoring indicators, Y's are the binary survival outcomes and L's  are the covariates, which are either continuous or binary as you will see upon looking at the dataframe. Fortunately, the data is already cleaned, as in, NA's are produced for all nodes after outcome is 1 (death) and also after censoring occurs.  
+Load longdata.RData from bCourses. You may use Odat.long or Odat.wide for your analysis. They are identical except for the format. The columns are labeled according to how we normally notate them. $A1$'s are the binary treatments, $A2$'s are the censoring indicators, $Y$'s are the binary survival outcomes and $L$'s  are the covariates, which are either continuous or binary as you will see upon looking at the dataframe. Fortunately, the data is already cleaned, as in, NA's are produced for all nodes after outcome is 1 (death) and also after censoring occurs.  
 
 ### 1
 
-Assuming sequential randomization and positivity as usual, estimate the difference in counterfactual mean outcomes at time 5 under treatment and not: $\mathbb{E}[Y(5)_{\bar{a}=(0,0,1,1,1)}]-\mathbb{E}[Y(5)_{\bar{a}=(0,0,0,0,0)}]$. Give estimates using IPTW and TMLE (debiasing eachh outcome regression with a targeting step, moving backward in time and otherwise known as L-TMLE) and show all code used to do so.  Your superlearner library should include three algorithms, one of each of the following: glm, mean, xgboost. Provide instructions on how I may access your superlearner results in this estimation process.
+Assuming sequential randomization and positivity as usual, estimate the difference in counterfactual mean outcomes at time 5 under treatment and not: $\mathbb{E}[Y(5)_{\bar{a}=(0,0,1,1,1)}]-\mathbb{E}[Y(5)_{\bar{a}=(0,0,0,0,0)}]$, given no one is allowed to leave the study (i.e., censoring intervened upon to be 0 at all times).  Give estimates using IPTW and TMLE (debiasing each outcome regression with a targeting step, moving backward in time and otherwise known as L-TMLE) and show all code used to do so. Your superlearner library should include three algorithms, one of each of the following: glm, mean, xgboost. Provide instructions on how I may access your superlearner results in this estimation process.
 
 \vspace{.1in}
 
@@ -26,24 +27,29 @@ Assuming sequential randomization and positivity as usual, estimate the differen
 ### 2
 
 Let us assume you have estimated counterfactual means for all 32 possible regimes, $\bar{a}$, over 5 time points and you have summarized the counterfactual means via the use of a marginal structural model (MSM): 
-$$\underset{\alpha, \beta}{argmin}\sum_{\bar{a}}(\mathbb{E}Y(5)_{\bar{a}} - (\alpha + \beta sum(\bar{a})))$$
+$$\underset{\alpha, \beta}{argmin}\sum_{\bar{a}}(\mathbb{E}Y(5)_{\bar{a}} - (\alpha + \beta sum(\bar{a})))^2$$
 
-where $sum(\bar{a})$ = sum of treatments over the 5 time points in the study. Notice, this is just a least squares projection of the counterfactual means onto a line.  How would you interpret this coefficient to a layperson, i.e. someone not technical?
+where $sum(\bar{a})$ = sum of treatments over the 5 time points in the study. Notice, this is just a least squares projection of the counterfactual means onto a line.  How would you interpret this coefficient to a layperson, i.e. someone not technical? 
 
 \vspace{.1in}
 
+This coefficient is the estimated line that describes the change in the probability of our outcome (survival or death) caused by differing levels of treatment (or exposure) over five time points, summarizing how the treatment affects the outcome. We can think of this line as an estimated relationship between our treatment and outcome. Specifically, this is the line that best fits our estimation and we estimated this line using a marginal structural model (MSM). MSMs use a multi-step estimation strategy to separate confounding control (i.e. control from a variable that influences both the treatment and the outcome) from the estimation of the parameters of interest, allowing us to obtain unbiased estimates. 
 
+Representing this treatment-outcome relationship as a line of best fit gives us the ability to communicate to practitioners the rate, the slope, of outcome under the cumulative treatment regimes.
 
 ### 3
 
 Continuing from the previous question, what if you had some regimes that were much more common than others in the data and you decided to offer estimates of the weighted projection:
 
-$$\underset{\alpha, \beta}{argmin}\sum_{\bar{a}}P_n(\bar{A}=\bar{a})(\mathbb{E}Y(5)_{\bar{a}} - (\alpha + \beta sum(\bar{a})))$$
+$$\underset{\alpha, \beta}{argmin}\sum_{\bar{a}}P_n(\bar{A}=\bar{a})(\mathbb{E}Y(5)_{\bar{a}} - (\alpha + \beta sum(\bar{a})))^2$$
 
 How would you interpret this coefficient to a layperson, ie someone not technical? $P_n(\bar{A}=\bar{a})$ is just the empirical probability of observing $\bar{a}$. Also, in what situation does this change the parameter defined in the previous sections? Explain briefly.    
 
 \vspace{.1in}
 
+This coefficient is the estimated line that describes the change in the probability of our outcome (survival or death) caused by **observing** differing levels of treatment (or exposure) over five time points, summarizing how the **observed** treatment regimes affect the outcome. We can think of this line as an estimated relationship between our treatment and outcome where we *also allow the commonality of the treatment to affect this treatment-outcome relationship*. This line is estimated similarly to the previous section but, contrary to the previous coefficient, this line is weighted by the probability of observing a treatment regime. This type of weighting can be useful when some regimes are much more common than others.
+
+Like the previous section, we can still interpret this coefficient/line in terms of a rate (where the rate is just the slope of this line). However, the rate here is influenced by how many people got the treatment regimes. 
 
 
 ### Collaborators & Resources
