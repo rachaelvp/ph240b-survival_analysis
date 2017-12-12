@@ -7,8 +7,8 @@ output:
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(survival)
-library(survminer)
+library(ltmle)
+library(SuperLearner)
 load("~/Downloads/longdata.RData")
 ```
 
@@ -20,8 +20,44 @@ Assuming sequential randomization and positivity as usual, estimate the differen
 
 \vspace{.1in}
 
-```{r}
+```{r, cache=TRUE, message=FALSE, warning=FALSE}
+Odat = Odat.wide[,c(2:5,7:27)]
 
+Anodes = grep("A1",colnames((Odat)))
+Cnodes = grep("A2",colnames((Odat)))
+Lnodes = grep("L",colnames((Odat)))
+Ynodes = grep("Y", colnames((Odat)))
+
+for (col in Cnodes) Odat[,col] = BinaryToCensoring(is.censored = Odat[col])
+
+Odat[,"Y_1"][is.na(Odat$Y_1)] = 1 
+Odat[,"Y_2"][is.na(Odat$Y_2)] = 1 
+Odat[,"Y_3"][is.na(Odat$Y_3)] = 1 
+Odat[,"Y_4"][is.na(Odat$Y_4)] = 1 
+Odat[,"Y_5"][is.na(Odat$Y_5)] = 1
+
+results.ltmle <- ltmle(Odat,
+                 Anodes = Anodes,
+                 Cnodes = Cnodes,
+                 Lnodes = Lnodes,
+                 Ynodes = Ynodes,
+                 abar = list(c(0,0,1,1,1), c(0,0,0,0,0)), 
+                 survivalOutcome = TRUE,
+                 SL.library = c("SL.mean", "SL.glm", "SL.xgboost"),
+                 variance.method = "ic"
+                 )
+
+# TMLE results
+summary(results.ltmle, "tmle")
+
+# IPTW results
+summary(results.ltmle, "iptw")
+
+# SuperLearner results
+#results.ltmle$fit$g
+
+# SuperLearner Q results
+#results.ltmle$fit$Q
 ```
 
 ### 2
@@ -33,7 +69,7 @@ where $sum(\bar{a})$ = sum of treatments over the 5 time points in the study. No
 
 \vspace{.1in}
 
-This coefficient is the estimated line that describes the change in the probability of our outcome (survival or death) caused by differing levels of treatment (or exposure) over five time points, summarizing how the treatment affects the outcome. We can think of this line as an estimated relationship between our treatment and outcome. Specifically, this is the line that best fits our estimation and we estimated this line using a marginal structural model (MSM). MSMs use a multi-step estimation strategy to separate confounding control (i.e. control from a variable that influences both the treatment and the outcome) from the estimation of the parameters of interest, allowing us to obtain unbiased estimates. 
+This coefficient is the estimated line that describes the change in the probability of our outcome (survival or death) caused by differing levels of treatment (or exposure) over five time points, summarizing how the treatment affects the outcome. We can think of this line as an estimated relationship between our treatment and outcome. Specifically, this is the line that best fits our estimation and we estimated this line using a marginal structural model (MSM). MSMs use a multi-step estimation strategy to separate confounding control (i.e. control from a variable that influences both the treatment and the outcome) from the estimation of the parameters of interest, allowing us to obtain unbiased estimates of the counterfactual means. 
 
 Representing this treatment-outcome relationship as a line of best fit gives us the ability to communicate to practitioners the rate, the slope, of outcome under the cumulative treatment regimes.
 
